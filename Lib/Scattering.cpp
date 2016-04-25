@@ -174,8 +174,6 @@ double Crystal::FTforConvexCrystal(Hand Handler) const
 	i_beam.isInternal = false;
 
 	double square = 0, s = 0, csa, csta; // the area of the particle projection
-	unsigned int *faces_0;
-	faces_0 = Facets[0];
 
 	WorkBeam beams[128];
 	unsigned int dept = 0;
@@ -183,7 +181,7 @@ double Crystal::FTforConvexCrystal(Hand Handler) const
 	dept ++;
 	beams[dept-1].facet_index = -1;
 	beams[dept-1].level = cnt;
-	beams[dept-1].beam = /*std::move*/(i_beam);
+	beams[dept-1].beam = i_beam;
 
 	Beam incedence_beam;
 	unsigned int facet;
@@ -205,7 +203,7 @@ double Crystal::FTforConvexCrystal(Hand Handler) const
 		{
 			for (unsigned int l = 0; l< K; l++)
 			{ // facet loop
-				if(!faces_0[l]) continue;
+				if(!Facets[0][l]) continue;
 				const Point3D n = this->NormToFacet(l);
 				csa = k*n;
 

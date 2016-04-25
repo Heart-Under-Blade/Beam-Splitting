@@ -89,7 +89,7 @@ Point3D  CenterOfBeam(const Beam &bm)
 //------------------------------------------------------------------------------
 
 // the area of the cross section of the beam
-double  CrossSection(const Beam &bm)
+double CrossSection(const Beam &bm)
 {
 	const double Eps = 1e7*DBL_EPSILON;
 	const double e = fabs(bm.N * bm.r);

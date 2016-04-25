@@ -160,7 +160,54 @@ page 95.
 class Point3D {
 public:
 	double x, y, z;
-	Point3D(double X=0, double Y=0, double Z=0) : x(X), y(Y), z(Z) {};
+	Point3D(double X=0, double Y=0, double Z=0) : x(X), y(Y), z(Z) {}
+
+	Point3D(const Point3D &other)
+	{
+		x = other.x;
+		y = other.y;
+		z = other.z;
+	}
+
+	Point3D(Point3D &&other)
+	{
+		x = other.x;
+		y = other.y;
+		z = other.z;
+
+		other.x = 0.f;
+		other.y = 0.f;
+		other.z = 0.f;
+	}
+
+	Point3D& operator = (const Point3D &other)
+	{
+		if (this != &other)
+		{
+			x = other.x;
+			y = other.y;
+			z = other.z;
+		}
+
+		return *this;
+	}
+
+	Point3D& operator = (Point3D &&other)
+	{
+		if (this != &other)
+		{
+			x = other.x;
+			y = other.y;
+			z = other.z;
+
+			other.x = 0.f;
+			other.y = 0.f;
+			other.z = 0.f;
+		}
+
+		return *this;
+	}
+
 	Point3D  operator-() const
 		{ return Point3D(-this->x, -this->y, -this->z); }
 	Point3D  operator-(const Point3D& a) const

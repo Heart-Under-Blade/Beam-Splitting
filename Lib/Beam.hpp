@@ -40,7 +40,7 @@ public:
 	Beam(void) : mt(2,2), lng(0) 
 		{ this->mt.Identity(); }
 	Beam(const std::list<Point3D>& _v, double l = 0) :
-		mt(2,2), v(_v), lng(l) 
+		mt(2,2), v(_v), lng(l)
 		{ this->mt.Identity(); }
 	~Beam(void) {}
 	Beam&  operator=(const Beam& b)
@@ -50,12 +50,12 @@ public:
 		this->path = std::move(b.path);
 
 		this->lng = b.lng;
-		this->D = b.D;
-		this->e = b.e;
-		this->r = b.r;
-		this->T = b.T;
-		this->F = b.F;
-		this->N = b.N;
+		this->D = std::move(b.D);
+		this->e = std::move(b.e);
+		this->r = std::move(b.r);
+		this->T = std::move(b.T);
+		this->F = std::move(b.F);
+		this->N = std::move(b.N);
 		this->isInternal = b.isInternal;
 		return *this;
 	}
