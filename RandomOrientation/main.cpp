@@ -55,7 +55,7 @@ void  Handler(Beam& bm);
 /// Reads the parameters from data file
 int ReadFile(char* name, double* params, unsigned int n);
 /// Fill in the \b mask and \b **Face from data file 
-void MaskAppend(char s[], unsigned int n);
+void MaskAppend(char s[], unsigned int);
 /// Shows the title
 void ShowTitle(void);
 
@@ -184,9 +184,10 @@ int main(int argc, char* argv[])
 					beta=acos(((double)(rand()) / ((double)RAND_MAX))*2.0-1.0);
 					P=1.0;
 				}
+//				beta = gamma = 0;
 				Body->ChangePosition(beta, gamma,0.0);
 
-				s += P*Body->FTforConvexCrystal(Handler);
+				s += P*Body->FTforConvexCrystal/*TracingOfInternalBeam*/(Handler);
 				if(!(j%100)) cout<<'.';
 			}			
 			cout << "\n" << (double)(i+1)/(double)BetaNumber*100.0<<"% ";
@@ -281,8 +282,8 @@ int main(int argc, char* argv[])
 	//----------------------------------------------------------------------------
 	// some information for user
 	cout << "\nTotal number of body orientation = " << NumOrient;
-	cout << "\nTotal scattering energy = " << D_tot;
-	cout << "\nTotal incoming energy = " << s;
+	cout << "\nTotal scattering energy = " << D_tot*NRM;
+//	cout << "\nTotal incoming energy = " << s;
 	cout << "\nAveraged cross section = " << s*NRM;
 	cout << "\nAll done. Please, press ENTER.";
 	getchar();
@@ -301,12 +302,12 @@ void  Handler(Beam& bm)
 	{		
 		bool flag = false;
 		list<Chain>::const_iterator c = mask.begin();
-		for (;c!=mask.end();c++)
+		for (; c!=mask.end(); ++c)
 		{
 			list<uint >::const_iterator it = c->Ch.begin();
 			if (szP!=c->sz) continue;
 			list<uint >::const_iterator fs = bm.BeginP();
-			for (;it!=c->Ch.end() && (*it)==(*fs);it++, fs++);
+			for (;it!=c->Ch.end() && (*it)==(*fs); ++it, ++fs);
 			if (it==c->Ch.end())
 			{
 				flag = true;
@@ -391,7 +392,7 @@ int ReadFile(char* name, double* params, unsigned int n)
 
 
 //This function interprets the text line into beam name and bushed this name into special list
-void MaskAppend(char s[], unsigned int n)
+void MaskAppend(char s[], unsigned int)
 {
 	list<unsigned int> ch;
 	unsigned int intern_numb = 0; 

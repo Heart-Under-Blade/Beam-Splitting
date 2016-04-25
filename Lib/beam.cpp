@@ -50,15 +50,19 @@ Polyg  Beam::Projection(const double * const pp, int k) const
 			cnt = Proj(pcnt-this->r*(n*pcnt+D)/ang, k);
 
 	if(cnt.classify(p0,p1) == RIGHT)
-		for(p = this->v.begin(); p!=this->v.end(); p++) {
+		for(p = this->v.begin(); p!=this->v.end(); ++p)
+		{
 			const Point3D r = *p-this->r*(n*(*p)+D)/ang;
 			const Point2D pp = Proj(r,k);
 			g.insert(pp);
 		}
-	else {
+	else
+	{
 		p = this->v.end();
-		do {
-			p--;
+
+		do
+		{
+			--p;
 			// projection of the beam to facet
 			const Point3D r = *p-this->r*(n*(*p)+D)/ang;
 			const Point2D pp = Proj(r,k);
@@ -74,8 +78,12 @@ Polyg  Beam::Projection(const double * const pp, int k) const
 Point3D  CenterOfBeam(const Beam &bm)
 {
 	Point3D pt(0,0,0);
-	for(std::list<Point3D>::const_iterator p=bm.v.begin(); p!=bm.v.end(); p++)
+
+	for (std::list<Point3D>::const_iterator p = bm.v.begin(); p != bm.v.end(); ++p)
+	{
 		pt += *p;
+	}
+
 	return pt/bm.v.size();
 }
 //------------------------------------------------------------------------------
@@ -84,23 +92,25 @@ Point3D  CenterOfBeam(const Beam &bm)
 double  CrossSection(const Beam &bm)
 {
 	const double Eps = 1e7*DBL_EPSILON;
-	std::list<Point3D>::const_iterator p = bm.v.begin();
-	const Point3D bgn = *p++;
-	Point3D p1 = *p++-bgn, p2 = *p-bgn;
-	Point3D v = p2%p1;
-	const double e = fabs(v*bm.r);
-	if(e < Eps) return 0;
-	const double lv = length(v);
-	double s = 0;
-	Point3D d = p2%p1;
-	s += length(d);
-	while(p++, p!=bm.v.end()) {
-		p1 = p2;
-		p2 = *p - bgn;
-		d = p2%p1;
-		s += length(d);
+	const double e = fabs(bm.N * bm.r);
+
+	if(e < Eps) {
+		return 0;
 	}
-	return e*s/(2.0*lv);
+
+	double s = 0;
+	std::list<Point3D>::const_iterator p = bm.v.begin();
+	const Point3D& bgn = *p++;
+	Point3D p1 = *p-bgn;
+
+	while(p++, p!=bm.v.end())
+	{
+		const Point3D p2 = *p - bgn;
+		s += length(p2%p1);
+		p1 = p2;
+	}
+
+	return e*s/(2.0);
 }
 //------------------------------------------------------------------------------
 
@@ -111,11 +121,14 @@ double AreaOfBeam(const Beam &bm)
 	std::list<Point3D>::const_iterator p = bm.v.begin();
 	const Point3D& bgn = *p++;
 	Point3D p1 = *p-bgn;
-	while(p++, p!=bm.v.end()) {
+
+	while(p++, p!=bm.v.end())
+	{
 		const Point3D p2 = *p - bgn;
 		s += length(p2%p1);
 		p1 = p2;
 	}
+
 	return s/2.0;
 }
 //------------------------------------------------------------------------------
@@ -126,7 +139,7 @@ void  OutBeam(char* name, const Beam& bm)
 	unsigned int i = 0;
 	std::ofstream out(name);
 	out.precision(15);
-	for(std::list<Point3D>::const_iterator p=bm.v.begin(); p!=bm.v.end(); p++)
+	for(std::list<Point3D>::const_iterator p=bm.v.begin(); p!=bm.v.end(); ++p)
 		out << i++ << "  {" << p->x << ',' << p->y << ',' << p->z << "}\n";
 }
 //------------------------------------------------------------------------------
@@ -138,7 +151,7 @@ Point2D  Proj_Vertex(const Beam &bm , Point3D &pt)
 }
 //------------------------------------------------------------------------------
 
-Beam&  Beam::Rotate(Point3D k, Point3D Ey)  
+Beam&  Beam::Rotate(const Point3D &k, const Point3D &Ey)
 {
 	Point3D e1;
 	double cs = k*this->r;  

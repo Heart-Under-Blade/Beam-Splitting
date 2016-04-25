@@ -80,6 +80,8 @@ inline void Crystal::setOutputBeam(__m128 *_output_points, int outputSize, std::
 bool Crystal::Intersection2(const Beam& inputBeam, unsigned int facetIndex, std::list<Point3D>& outputBeam) const
 {
 	__m128 _output_points[MAX_BEAM_VERTEX_NUM];
+	__m128 *_output_ptr = _output_points;
+
 	int outputSize = inputBeam.v.size();
 
 	__m128 _normal_to_facet = _mm_setr_ps(Gran[facetIndex][0], Gran[facetIndex][1], Gran[facetIndex][2], 0.0);
@@ -91,11 +93,12 @@ bool Crystal::Intersection2(const Beam& inputBeam, unsigned int facetIndex, std:
 	}
 
 	__m128 _buffer[MAX_BEAM_VERTEX_NUM];
+	__m128 *_buffer_ptr = _buffer;
 	int bufferSize;
 
 	unsigned facetSize = vertexCounts[facetIndex];
 
-	__m128 _p1, _p2; /// points of facet
+	__m128 _p1, _p2; /// vertices of facet
 	__m128 _s_point, _e_point; /// points of projection
 	bool isInsideE, isInsideS;
 
@@ -109,19 +112,18 @@ bool Crystal::Intersection2(const Beam& inputBeam, unsigned int facetIndex, std:
 		bufferSize = outputSize;
 		outputSize = 0;
 
-		for (int j = 0; j < bufferSize; ++j)
-		{
-			_buffer[j] = _output_points[j];
-		}
+		__m128 *_temp = _output_ptr;
+		_output_ptr = _buffer_ptr;
+		_buffer_ptr = _temp;
 
-		_s_point = _buffer[bufferSize-1];
+		_s_point = _buffer_ptr[bufferSize-1];
 		isInsideS = is_inside_i(_s_point, _p1, _p2, _normal_to_facet);
 
 		bool isIntersected;
 
 		for (int j = 0; j < bufferSize; ++j)
 		{
-			_e_point = _buffer[j];
+			_e_point = _buffer_ptr[j];
 			isInsideE = is_inside_i(_e_point, _p1, _p2, _normal_to_facet);
 
 			if (isInsideE)
@@ -132,11 +134,11 @@ bool Crystal::Intersection2(const Beam& inputBeam, unsigned int facetIndex, std:
 
 					if (isIntersected)
 					{
-						_output_points[outputSize++] = x;
+						_output_ptr[outputSize++] = x;
 					}
 				}
 
-				_output_points[outputSize++] = _e_point;
+				_output_ptr[outputSize++] = _e_point;
 			}
 			else if (isInsideS)
 			{
@@ -144,7 +146,7 @@ bool Crystal::Intersection2(const Beam& inputBeam, unsigned int facetIndex, std:
 
 				if (isIntersected)
 				{
-					_output_points[outputSize++] = x;
+					_output_ptr[outputSize++] = x;
 				}
 			}
 
@@ -153,7 +155,7 @@ bool Crystal::Intersection2(const Beam& inputBeam, unsigned int facetIndex, std:
 		}
 	}
 
-	setOutputBeam(_output_points, outputSize, outputBeam);
+	setOutputBeam(_output_ptr, outputSize, outputBeam);
 	return outputBeam.size() > 2;
 }
 
@@ -188,7 +190,6 @@ double Crystal::FTforConvexCrystal(Hand Handler) const
 	unsigned int *faces_cnt;
 	std::list<Point3D> Result;
 	std::list<unsigned int>::const_iterator fs;
-	std::list<Point3D>::const_iterator p;
 	Point3D Eh, n, pnt, pcnt, pv, R, T;
 
 	const complex Tref = 2.0*RefI/(1.0+RefI);
@@ -317,7 +318,7 @@ double Crystal::FTforConvexCrystal(Hand Handler) const
 				Beam Reflected(Result), // internal (reflected) beam
 						Refracted(Result); // outgoing beam
 
-				for (fs = incedence_beam.BeginP(); fs != incedence_beam.EndP(); fs++) {
+				for (fs = incedence_beam.BeginP(); fs != incedence_beam.EndP(); ++fs) {
 					Reflected.PushBackP(*fs);
 					Refracted.PushBackP(*fs);
 				}
@@ -351,17 +352,19 @@ double Crystal::FTforConvexCrystal(Hand Handler) const
 						Refracted.lng = Reflected.lng + fabs(d+Refracted.D);
 					}
 					//--------------------------------------------------------------------
-					p = Refracted.Begin();
+
+					std::list<Point3D>::const_iterator it_p;
+					it_p = Refracted.Begin();
 					pcnt = std::move(CenterOfBeam(Refracted));
-					pv = std::move(((*++p)-pcnt)%((*p)-pcnt));
+					pv = std::move(((*++it_p)-pcnt)%((*it_p)-pcnt));
 
 					if (pv*Refracted.r < 0.0)
 					{
 						Refracted.Clear();
-						p = Result.begin();
+						it_p = Result.begin();
 
-						for(unsigned int j=0; j<Result.size(); p++, j++) {
-							Refracted.PushFront(*p);
+						for(unsigned int j=0; j<Result.size(); ++it_p, ++j) {
+							Refracted.PushFront(*it_p);
 						}
 					}
 
@@ -410,15 +413,19 @@ double Crystal::FTforConvexCrystal(Hand Handler) const
 							Refracted.lng = Reflected.lng + fabs(d+Refracted.D);
 						}
 						//----------------------------------------------------------------------
-						p = Refracted.Begin();
+
+						std::list<Point3D>::const_iterator it_p;
+						it_p = Refracted.Begin();
 						pcnt = std::move(CenterOfBeam(Refracted));
-						pv = std::move(((*++p)-pcnt)%((*p)-pcnt));
+						pv = std::move(((*++it_p)-pcnt)%((*it_p)-pcnt));
 
 						if (pv*Refracted.r < 0.0) {
 							Refracted.Clear();
-							p = Result.begin();
-							for(unsigned int j=0; j < Result.size(); p++, j++)
-								Refracted.PushFront(*p);
+							it_p = Result.begin();
+							for(unsigned int j=0; j < Result.size(); ++it_p, ++j)
+							{
+								Refracted.PushFront(*it_p);
+							}
 						} //
 
 						Refracted.N = n;

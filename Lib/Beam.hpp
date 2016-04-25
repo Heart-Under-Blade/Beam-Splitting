@@ -28,7 +28,6 @@ private:
 public:
 	std::list<Point3D> v;   ///< The beam's vertexes
 	std::list<unsigned int> path; ///<beam's trajectory
-	std::list<Point2D> vpr;  ///< Projection of the beam's vertexes on the normal plane 
 
 	double	lng,           ///< optical path of the beam
 			D;             ///< current position of phase front from Ax+By+Cz+D=0
@@ -43,13 +42,13 @@ public:
 	Beam(const std::list<Point3D>& _v, double l = 0) :
 		mt(2,2), v(_v), lng(l) 
 		{ this->mt.Identity(); }
-	~Beam(void) {};
+	~Beam(void) {}
 	Beam&  operator=(const Beam& b)
 	{ 
 		this->mt = b.mt;
-		this->v.clear();	this->v = b.v;
-		this->vpr.clear();	this->vpr = b.vpr;
-		this->path.clear();	this->path = b.path;
+		this->v = std::move(b.v);
+		this->path = std::move(b.path);
+
 		this->lng = b.lng;
 		this->D = b.D;
 		this->e = b.e;
@@ -68,7 +67,6 @@ public:
 	matrixC   operator() (void) const  { return this->mt; } ///< Returns Jones matrix of the beam
 	matrixC&  operator() (void)        { return this->mt; } ///< Return reference to Jones matrix 
 	void      Clear(void)              { this->v.clear(); } ///< Clears beam vertex list
-	void      ClearPr(void)            { this->vpr.clear(); } ///< Clears beam vertex projection list
 	std::list<Point3D>::const_iterator  Begin(void) const 
 		{ return this->v.begin(); }
 	std::list<Point3D>::const_iterator  End(void) const
@@ -79,12 +77,10 @@ public:
 		{ return this->path.end(); }
 
 	Polyg     Projection(const double * const, int) const;
-	Beam&     Rotate(Point3D k, Point3D Ey);  ///< Rotate Jones matrix of the beam to basis of scattering plane
+	Beam&     Rotate(const Point3D &k, const Point3D &Ey);  ///< Rotate Jones matrix of the beam to basis of scattering plane
 	Beam      RotatePlane(const Point3D & NewE); ///< Rotate Jones matrix to new basis
 	void      PushFront(const Point3D& p) { this->v.push_front(p); }
 	void      PushBack(const Point3D& p)  { this->v.push_back(p); }
-	void      PushFrontPr(const Point2D& p) { this->vpr.push_front(p); } // new
-	void      PushBackPr(const Point2D& p)  { this->vpr.push_back(p); }  // new
 	void      PushFrontP(const int& f) { this->path.push_front(f); }
 	void      PushBackP(const int& f)  { this->path.push_back(f); }	
 	SphCrd    Spherical(void) const;

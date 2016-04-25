@@ -23,6 +23,9 @@ void Prism::SetVertices(void)
 	this->p[4].x  = this->p[10].x = -(this->p[5].x = this->p[11].x = bf1);
 	this->p[4].y  = this->p[10].y =   this->p[5].y = this->p[11].y = -bf2;
 	this->p[10].z = this->p[11].z = -(this->p[4].z = this->p[5].z  = this->h);
+
+	vertexCounts[0] = vertexCounts[7] = 6;
+	vertexCounts[1] = vertexCounts[2] = vertexCounts[3] = vertexCounts[4] = vertexCounts[5] = vertexCounts[6] = 4;
 }
 
 // the initialization of prism facets
@@ -53,6 +56,10 @@ void Pyramid::SetVertices(void)
 
 	this->p[1].z = this->p[2].z = this->p[3].z =
 	this->p[4].z = this->p[5].z = this->p[6].z = -this->h;
+
+	for (unsigned i = 0; i < K; ++i) {
+		vertexCounts[i] = 0;
+	}
 }
 // the initialization of the pyramid facets
 void Pyramid::SetFacets(void)
@@ -83,6 +90,10 @@ void Bullet::SetVertices(void)
 	this->p[10].z = this->p[11].z = -(this->p[4].z = this->p[5].z  = this->h);
 	// top of pyramid
 	this->p[12].x = this->p[12].y = 0; this->p[12].z = -this->h-this->hp;
+
+	for (unsigned i = 0; i < K; ++i) {
+		vertexCounts[i] = 0;
+	}
 }
 // the initialization of bullet facets
 void Bullet::SetFacets(void)
@@ -131,6 +142,10 @@ void TaperedPrism::SetVertices(void)
 	this->p[21].x = -this->wp; 	this->p[21].y = 0;		this->p[21].z = -this->h;
 	this->p[22].x = -b3;		this->p[22].y = -b4;	this->p[22].z = -this->h;
 	this->p[23].x = b3;			this->p[23].y = -b4;	this->p[23].z = -this->h;
+
+	for (unsigned i = 0; i < K; ++i) {
+		vertexCounts[i] = 0;
+	}
 }
 // the initialization of the prism facets
 void TaperedPrism::SetFacets(void)
@@ -163,6 +178,10 @@ void CavityPrism::SetVertices(void)
 	this->p[10].z = this->p[11].z = -(this->p[4].z = this->p[5].z = this->h);
 
 	this->p[12].x = this->p[12].y = 0; this->p[12].z = this->c-this->h;
+
+	for (unsigned i = 0; i < K; ++i) {
+		vertexCounts[i] = 0;
+	}
 }
 // the initialization of bullet facets
 void CavityPrism::SetFacets(void)
@@ -221,6 +240,10 @@ void Cup::SetVertices(void)
 	this->p[15].x = -this->wc;	this->p[15].y = 0;		this->p[15].z = bf3;
 	this->p[16].x = -bf1;		this->p[16].y = -bf2;	this->p[16].z = bf3;
 	this->p[17].x = bf1;		this->p[17].y = -bf2;	this->p[17].z = bf3;
+
+	for (unsigned i = 0; i < K; ++i) {
+		vertexCounts[i] = 0;
+	}
 }
 // the initialization of cup facets
 void Cup::SetFacets(void)
@@ -250,6 +273,10 @@ void TrianglePrism::SetVertices(void)
 	this->p[3].z = this->p[4].z =   this->p[5].z = -(this->p[0].z = this->p[1].z = this->p[2].z = this->h);
 	this->p[1].x = this->p[4].x =   this->p[2].x =   this->p[5].x = bf1;
 	this->p[2].y = this->p[5].y = -(this->p[1].y =   this->p[4].y = bf2);
+
+	for (unsigned i = 0; i < K; ++i) {
+		vertexCounts[i] = 0;
+	}
 }
 //==============================================================================
 void TrianglePrism::SetFacets(void)
@@ -274,6 +301,10 @@ void Parallelepiped::SetVertices(void)
 
 	  this->p[4].z = this->p[5].z = this->p[6].z = this->p[7].z =
 	-(this->p[0].z = this->p[1].z = this->p[2].z = this->p[3].z = this->h);
+
+	for (unsigned i = 0; i < K; ++i) {
+		vertexCounts[i] = 0;
+	}
 }
 //==============================================================================
 void Parallelepiped::SetFacets(void)
@@ -297,6 +328,11 @@ void Tetrahedron::SetVertices(void)
 	this->p[1].x = -bf4;	this->p[1].y = 0;		this->p[1].z = -bf3;
 	this->p[2].x = bf1;		this->p[2].y = -bf2;	this->p[2].z = -bf3;
 	this->p[3].x = 0;		this->p[3].y = 0;		this->p[3].z = this->w*Sqrt6/4.;
+
+
+	for (unsigned i = 0; i < K; ++i) {
+		vertexCounts[i] = 0;
+	}
 }
 //==============================================================================
 void Tetrahedron::SetFacets(void)
@@ -334,6 +370,10 @@ void Dodecahedron::SetVertices(void)
 	 -(this->p[10].y = this->p[22].y = this->p[8].y  = this->p[20].y = -bf1);
 	   this->p[2].z  = this->p[10].z = this->p[4].z  = this->p[8].z  =
 	 -(this->p[14].z = this->p[22].z = this->p[16].z = this->p[20].z = -this->h);
+
+	for (unsigned i = 0; i < K; ++i) {
+		vertexCounts[i] = 0;
+	}
 }
 //==============================================================================
 void Dodecahedron::SetFacets(void)

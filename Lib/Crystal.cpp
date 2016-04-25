@@ -29,7 +29,7 @@ void Frame::AllocMem(void) // allocation of memory for particle
 	for(unsigned int i=0; i<this->K; i++) {
 		this->Gr[i] = new int[this->Km+2];
 		this->Gran[i] = new double[4];
-	}
+    }
 }
 
 void Frame::FreeMem(void) // memory release
@@ -148,19 +148,19 @@ bool Crystal::Intersection(const Beam& bm, unsigned int i, std::list<Point3D>& R
 	if(!CheckPolygon(beam)) {
 		OutPolyg("Errors.log", "beam", beam);
 		throw "Crystal::Intersection : Error!";
-	}
+	} 
 	#endif
-	if(FastPolygonIntersect(beam, facet, intersection)) {
+    if(FastPolygonIntersect(beam, facet, intersection)) {
 		#ifdef _DEBUG
 		if(!CheckPolygon(intersection)) {
 			OutPolyg("Errors.log", "beam", beam);
 			OutPolyg("Errors.log", "facet", facet);
 			OutPolyg("Errors.log", "intersection", intersection);
 			throw "Crystal::Intersection : Error!";
-		}
+		} 
 		#endif
 //		const double e = AreaOfConvexPolygon(intersection);
-		//if(e < S_eps) return false;
+        //if(e < S_eps) return false;
 
 		Retrieve(intersection, i, fl, Result);
 		//------------------------------------------------------------------------
@@ -254,12 +254,12 @@ void Crystal::ChangeVertices(double tt, double ps)
 	const double c1 = cos(tt), c2 = cos(ps),
 				 s1 = sin(tt), s2 = sin(ps);
 	#endif
-	Point3D buf;
+	Point3D buf; 
 	for(unsigned int i=0; i<this->M; i++) {
 		buf = this->p[i];
 		this->p[i].x = c1*(c2*buf.x-s2*buf.y)+s1*buf.z;
 		this->p[i].y = s2*buf.x + c2*buf.y;
-		this->p[i].z = s1*(s2*buf.y - c2*buf.x) + c1*buf.z;
+		this->p[i].z = s1*(s2*buf.y - c2*buf.x) + c1*buf.z; 
 	}
 }
 
@@ -285,7 +285,7 @@ void Crystal::ChangeFacets(void)
 	}
 }
 
-// returns true if the point lies on the facet number ii
+// returns true if the point lies on the facet number ii 
 bool Crystal::PointInFacet(const Point3D& a, int ii) const
 {
 	double total = 0;
@@ -295,7 +295,7 @@ bool Crystal::PointInFacet(const Point3D& a, int ii) const
 		Point2D pint(Proj(a,fl)),
 				pd0(Proj(this->p[this->Gr[ii][j]],fl)),
 				pd1(Proj(this->p[this->Gr[ii][j+1]],fl));
-		double x = signedAngle(pint,pd1,pd0);
+        double x = signedAngle(pint,pd1,pd0);
 		if(x == M_PI) return false;
 		total += x;
 	}
