@@ -29,7 +29,7 @@ void Frame::AllocMem(void) // allocation of memory for particle
 	for(unsigned int i=0; i<this->K; i++) {
 		this->Gr[i] = new int[this->Km+2];
 		this->Gran[i] = new double[4];
-    }
+	}
 }
 
 void Frame::FreeMem(void) // memory release
@@ -90,13 +90,11 @@ Polyg Crystal::Projection(unsigned int i, int k) const
 }
 
 // recovering the 3D result polygon from its 2D projection to the facet i
-std::list<Point3D> 
-Crystal::Retrieve(Polyg& p, unsigned int i, int k) const
+void Crystal::Retrieve(Polyg& p, unsigned int i, int k, std::list<Point3D> &g) const
 {
 	#ifdef _DEBUG
 	if(k > 2 || i > this->K) throw " Crystal::Retrieve : Error! ";
 	#endif
-	std::list<Point3D> g;
 	const double A = this->Gran[i][0], B = this->Gran[i][1],
 							 C = this->Gran[i][2], D = this->Gran[i][3];
 	for(unsigned int n=0; n<p.size(); n++, p.advance(CLOCKWISE)) {
@@ -109,17 +107,15 @@ Crystal::Retrieve(Polyg& p, unsigned int i, int k) const
 		}
 		g.push_back(res);
 	}
-	return g;
 }
 
 // intersection of the incident beam and projection of facet
-bool Crystal::Intersection
-(const Beam& bm, unsigned int i, std::list<Point3D>& Result) const
+bool Crystal::Intersection(const Beam& bm, unsigned int i, std::list<Point3D>& Result) const
 {
-	const Point3D n = this->NormToFacet(i);
+	const Point3D n = NormToFacet(i);
 	// kind of the projection
 	const int fl = nMX(fabs(n.x*bm.r.x), fabs(n.y*bm.r.y), fabs(n.z*bm.r.z));
-	Polyg 	facet = this->Projection(i, fl), // projection of the facet
+	Polyg 	facet = Projection(i, fl), // projection of the facet
 			beam = bm.Projection(Facet(i), fl); // projection of the beam
 	//----------------------------------------------------------------------------
 	Point2D max_fct(facet.point()), min_fct(facet.point()),
@@ -139,7 +135,8 @@ bool Crystal::Intersection
 		if(p.y < min_bm.y) min_bm.y = p.y;
 	}
 	if(max_fct.x<=min_bm.x || max_bm.x<=min_fct.x ||
-		 max_fct.y<=min_bm.y || max_bm.y<=min_fct.y) return false;
+		 max_fct.y<=min_bm.y || max_bm.y<=min_fct.y)
+		return false;
 	Polyg intersection;
 	#ifdef _DEBUG
 	const double e = AreaOfConvexPolygon(beam),
@@ -151,20 +148,21 @@ bool Crystal::Intersection
 	if(!CheckPolygon(beam)) {
 		OutPolyg("Errors.log", "beam", beam);
 		throw "Crystal::Intersection : Error!";
-	} 
+	}
 	#endif
-    if(FastPolygonIntersect(beam, facet, intersection)) {
+	if(FastPolygonIntersect(beam, facet, intersection)) {
 		#ifdef _DEBUG
 		if(!CheckPolygon(intersection)) {
 			OutPolyg("Errors.log", "beam", beam);
 			OutPolyg("Errors.log", "facet", facet);
 			OutPolyg("Errors.log", "intersection", intersection);
 			throw "Crystal::Intersection : Error!";
-		} 
+		}
 		#endif
-		const double e = AreaOfConvexPolygon(intersection);
-        //if(e < S_eps) return false;
-		Result = this->Retrieve(intersection, i, fl);
+//		const double e = AreaOfConvexPolygon(intersection);
+		//if(e < S_eps) return false;
+
+		Retrieve(intersection, i, fl, Result);
 		//------------------------------------------------------------------------
 		return true;
 	}
@@ -211,16 +209,37 @@ void Crystal::ChangeVertices(double tt, double ps, double f)
 	const double 	c1 = cos(tt), c2 = cos(ps), c3 = cos(f),
 					s1 = sin(tt), s2 = sin(ps), s3 = sin(f);
 	#endif
-	const double 	bf1 = c1*s2, bf2 = c1*c2,
-					l1 = c2*c3-bf1*s3, l2 = -bf1*c3-c2*s3, l3 = s1*s2,
-					m1 = s2*c3+bf2*s3, m2 = bf2*c3-s2*s3, m3 = -s1*c2,
-					n1 = s1*s3, n2 = s1*c3, n3 = c1;
+	const double
+			bf1 = c1*s2,
+			bf2 = c1*c2,
+
+			l1 = c2*c3-bf1*s3,
+			l2 = -bf1*c3-c2*s3,
+			l3 = s1*s2,
+
+			m1 = s2*c3+bf2*s3,
+			m2 = bf2*c3-s2*s3,
+			m3 = -s1*c2,
+
+			n1 = s1*s3,
+			n2 = s1*c3,
+			n3 = c1;
+
 	Point3D buf; // recalculation of the vertices
 	for(unsigned int i=0; i<this->M; i++) {
 		buf = this->p[i];
 		this->p[i].x = m2*buf.x + l2*buf.y + n2*buf.z;
 		this->p[i].y = m1*buf.x + l1*buf.y + n1*buf.z;
 		this->p[i].z = m3*buf.x + l3*buf.y + n3*buf.z;
+	}
+
+	for (unsigned i = 0; i < K; ++i)
+	{
+		for (unsigned j = 0; j < vertexCounts[i]; ++j)
+		{
+			Point3D &vertex = p[Gr[i][j]];
+			vertices[i][j] = _mm_setr_ps(vertex.x, vertex.y, vertex.z, 0.f);
+		}
 	}
 }
 
@@ -235,12 +254,12 @@ void Crystal::ChangeVertices(double tt, double ps)
 	const double c1 = cos(tt), c2 = cos(ps),
 				 s1 = sin(tt), s2 = sin(ps);
 	#endif
-	Point3D buf; 
+	Point3D buf;
 	for(unsigned int i=0; i<this->M; i++) {
 		buf = this->p[i];
 		this->p[i].x = c1*(c2*buf.x-s2*buf.y)+s1*buf.z;
 		this->p[i].y = s2*buf.x + c2*buf.y;
-		this->p[i].z = s1*(s2*buf.y - c2*buf.x) + c1*buf.z; 
+		this->p[i].z = s1*(s2*buf.y - c2*buf.x) + c1*buf.z;
 	}
 }
 
@@ -266,7 +285,7 @@ void Crystal::ChangeFacets(void)
 	}
 }
 
-// returns true if the point lies on the facet number ii 
+// returns true if the point lies on the facet number ii
 bool Crystal::PointInFacet(const Point3D& a, int ii) const
 {
 	double total = 0;
@@ -276,7 +295,7 @@ bool Crystal::PointInFacet(const Point3D& a, int ii) const
 		Point2D pint(Proj(a,fl)),
 				pd0(Proj(this->p[this->Gr[ii][j]],fl)),
 				pd1(Proj(this->p[this->Gr[ii][j+1]],fl));
-        double x = signedAngle(pint,pd1,pd0);
+		double x = signedAngle(pint,pd1,pd0);
 		if(x == M_PI) return false;
 		total += x;
 	}
